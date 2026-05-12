@@ -10,7 +10,7 @@ const getPineconeClient = () => {
 
 export const getIndex = () => {
   const pinecone = getPineconeClient();
-  return pinecone.Index(process.env.PINECONE_INDEX_NAME || 'invoices');
+  return pinecone.Index(process.env.PINECONE_INDEX_NAME || 'invoice-data');
 };
 
 export const queryVectors = async (embedding: number[], topK: number = 5) => {
