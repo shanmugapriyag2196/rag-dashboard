@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const PINECONE_ASSISTANT_URL = 'https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data';
-const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
+    const apiKey = process.env.PINECONE_API_KEY;
+    
+    if (!apiKey) {
+      console.error('PINECONE_API_KEY is not configured');
+      return NextResponse.json(
+        { error: 'Server configuration error', details: 'PINECONE_API_KEY not set' },
+        { status: 500 }
+      );
+    }
+
     const { messages } = await request.json();
     
     const pineconeMessages = messages.map((msg: { role: string; content: string }) => ({
@@ -15,7 +24,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(PINECONE_ASSISTANT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${PINECONE_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -34,7 +43,6 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     
-    // Handle various response formats from Pinecone Assistant
     let responseText = '';
     let sources: unknown[] = [];
     
