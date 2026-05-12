@@ -1,31 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEmbedding, getChatResponse } from '@/lib/openai';
-import { queryVectors } from '@/lib/pinecone';
+
+const PINECONE_ASSISTANT_URL = 'https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data';
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
     const { messages } = await request.json();
-    const lastMessage = messages[messages.length - 1];
+    
+    // Format messages for Pinecone Assistant API
+    const pineconeMessages = messages.map((msg: { role: string; content: string }) => ({
+      role: msg.role,
+      content: msg.content,
+    }));
 
-    const embedding = await getEmbedding(lastMessage.content);
-    const matches = await queryVectors(embedding, 5);
+    const response = await fetch(PINECONE_ASSISTANT_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PINECONE_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        messages: pineconeMessages,
+      }),
+    });
 
-    const context = matches
-      .map((match) => match.metadata?.text || match.metadata?.content || '')
-      .filter(Boolean)
-      .join('\n\n');
+    if (!response.ok) {
+      throw new Error(`Pinecone API error: ${response.status}`);
+    }
 
-    const sources = matches
-      .filter((match) => match.metadata?.text || match.metadata?.content)
-      .map((match, i) => ({
-        id: match.id || String(i),
-        text: match.metadata?.text || match.metadata?.content || '',
-        score: match.score || 0,
-      }));
-
-    const response = await getChatResponse(messages, context);
-
-    return NextResponse.json({ response, sources });
+    const data = await response.json();
+    
+    // Format response for frontend
+    return NextResponse.json({
+      response: data.message || data.content || data.response || 'No response received',
+      sources: data.sources || [],
+    });
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json(
