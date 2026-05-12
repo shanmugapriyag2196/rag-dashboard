@@ -3,14 +3,21 @@
 import { useState, useRef, useEffect } from 'react';
 import Sidebar from '../dashboard/components/Sidebar';
 
+interface Source {
+  id: string;
+  text: string;
+  score: number;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  sources?: Source[];
 }
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hello! I\'m your Invoice Assistant. Ask me anything about invoices, payments, or billing.' },
+    { role: 'assistant', content: 'Hello! I\'m your Invoice AI Assistant. I can help you find information about invoices from your Pinecone database. Try asking: "How many invoices from email for April 2025?"' },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,7 +48,11 @@ export default function ChatPage() {
       });
 
       const data = await response.json();
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      setMessages((prev) => [...prev, { 
+        role: 'assistant', 
+        content: data.response,
+        sources: data.sources 
+      }]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
@@ -51,54 +62,84 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm p-6">
-          <h1 className="text-2xl font-bold text-gray-800">Chat with Invoice AI</h1>
+        <header className="bg-white border-b px-6 py-4">
+          <h1 className="text-xl font-semibold text-gray-800">Invoice AI Chat</h1>
+          <p className="text-sm text-gray-500">Connected to Pinecone Assistant: invoice-data</p>
         </header>
-        <main className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-3xl mx-auto space-y-4">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                    msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-900'
-                  }`}>
-                    <p className="text-sm">{msg.content}</p>
+        <main className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+            {messages.map((msg, i) => (
+              <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-xl ${msg.role === 'user' ? 'order-2' : 'order-1'}`}>
+                  <div className={`flex items-start gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                      msg.role === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-700'
+                    }`}>
+                      {msg.role === 'user' ? 'U' : 'AI'}
+                    </div>
+                    <div className={`px-4 py-3 rounded-lg ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-600 text-white rounded-br-none' 
+                        : 'bg-white text-gray-900 rounded-bl-none shadow-sm'
+                    }`}>
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      {msg.sources && msg.sources.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <p className="text-xs font-medium text-gray-600 mb-1">Sources from Pinecone:</p>
+                          {msg.sources.map((source) => (
+                            <div key={source.id} className="text-xs text-gray-500 mb-1">
+                              <span className="font-mono bg-gray-100 px-1 rounded">{source.score.toFixed(2)}</span> {source.text.substring(0, 100)}...
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg">
-                    <p className="text-sm">Thinking...</p>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="max-w-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gray-300 text-gray-700 flex items-center justify-center text-sm">AI</div>
+                    <div className="px-4 py-3 rounded-lg bg-white rounded-bl-none shadow-sm">
+                      <div className="flex items-center gap-1">
+                        <span className="text-sm">Searching Pinecone</span>
+                        <span className="animate-pulse">...</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
-          <form onSubmit={handleSubmit} className="p-6 border-t bg-white">
-            <div className="max-w-3xl mx-auto flex gap-2">
+        </main>
+        <div className="bg-white border-t px-6 py-4">
+          <form onSubmit={handleSubmit}>
+            <div className="max-w-3xl mx-auto flex gap-3">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about invoices..."
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Ask about invoices, payments, billing..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
               >
-                Send
+                {isLoading ? 'Sending...' : 'Send'}
               </button>
             </div>
           </form>
-        </main>
+        </div>
       </div>
     </div>
   );

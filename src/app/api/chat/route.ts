@@ -15,9 +15,17 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
       .join('\n\n');
 
+    const sources = matches
+      .filter((match) => match.metadata?.text || match.metadata?.content)
+      .map((match, i) => ({
+        id: match.id || String(i),
+        text: match.metadata?.text || match.metadata?.content || '',
+        score: match.score || 0,
+      }));
+
     const response = await getChatResponse(messages, context);
 
-    return NextResponse.json({ response });
+    return NextResponse.json({ response, sources });
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json(
