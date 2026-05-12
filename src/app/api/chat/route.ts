@@ -7,7 +7,6 @@ export async function POST(request: NextRequest) {
   try {
     const { messages } = await request.json();
     
-    // Format messages for Pinecone Assistant API
     const pineconeMessages = messages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
       content: msg.content,
@@ -18,7 +17,6 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': `Bearer ${PINECONE_API_KEY}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/event-stream',
       },
       body: JSON.stringify({
         messages: pineconeMessages,
@@ -26,20 +24,43 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`Pinecone API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Pinecone API error:', response.status, errorText);
+      return NextResponse.json(
+        { error: 'Pinecone API error', status: response.status, details: errorText },
+        { status: 500 }
+      );
     }
 
     const data = await response.json();
     
-    // Format response for frontend
+    // Handle various response formats from Pinecone Assistant
+    let responseText = '';
+    let sources: unknown[] = [];
+    
+    if (typeof data === 'string') {
+      responseText = data;
+    } else if (data.message?.content) {
+      responseText = data.message.content;
+      sources = data.citations || [];
+    } else if (data.content) {
+      responseText = data.content;
+    } else if (data.response) {
+      responseText = data.response;
+    } else if (data.message) {
+      responseText = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
+    } else {
+      responseText = JSON.stringify(data);
+    }
+    
     return NextResponse.json({
-      response: data.message || data.content || data.response || 'No response received',
-      sources: data.sources || [],
+      response: responseText,
+      sources: sources,
     });
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json(
-      { error: 'Failed to process request' },
+      { error: 'Failed to process request', details: String(error) },
       { status: 500 }
     );
   }

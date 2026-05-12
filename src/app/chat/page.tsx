@@ -48,11 +48,18 @@ export default function ChatPage() {
       });
 
       const data = await response.json();
-      setMessages((prev) => [...prev, { 
-        role: 'assistant', 
-        content: data.response,
-        sources: data.sources 
-      }]);
+      if (data.error) {
+        setMessages((prev) => [...prev, { 
+          role: 'assistant', 
+          content: `Error: ${data.error}\n${data.details || ''}`
+        }]);
+      } else {
+        setMessages((prev) => [...prev, { 
+          role: 'assistant', 
+          content: data.response || 'No response received',
+          sources: data.sources 
+        }]);
+      }
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }]);
