@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Invoice RAG Assistant
 
-## Getting Started
+A Next.js chatbot application that answers invoice-related questions by querying data stored in Pinecone vector database.
 
-First, run the development server:
+## Features
 
+- Chat interface for asking invoice questions
+- Pinecone vector database integration for document storage
+- OpenAI embeddings and GPT-4o-mini for intelligent responses
+- Vercel-ready deployment
+
+## Prerequisites
+
+- Node.js 18+
+- Pinecone account with an index created
+- OpenAI API key
+
+## Setup
+
+1. Clone and install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create `.env.local` with your credentials:
+```bash
+PINECONE_API_KEY=your_pinecone_api_key
+PINECONE_INDEX_NAME=your_index_name
+OPENAI_API_KEY=your_openai_api_key
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) to start chatting.
 
-## Learn More
+## API Endpoints
 
-To learn more about Next.js, take a look at the following resources:
+- `POST /api/chat` - Send messages and receive AI responses
+- `POST /api/upload` - Upload invoice documents to Pinecone
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push to GitHub
+2. Import to Vercel
+3. Configure environment variables
+4. Deploy
 
-## Deploy on Vercel
+## File Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── chat/route.ts    # Chat endpoint
+│   │   └── upload/route.ts  # Document upload
+│   ├── components/
+│   │   └── ChatInterface.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+└── lib/
+    ├── openai.ts     # OpenAI integration
+    └── pinecone.ts   # Pinecone integration
+```
