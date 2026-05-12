@@ -12,20 +12,43 @@ export default function AnalyticsChart() {
   ];
 
   const maxQueries = Math.max(...data.map(d => d.queries));
+  const chartHeight = 180;
+
+  const points = data.map((item, i) => {
+    const x = (i / (data.length - 1)) * 100;
+    const y = chartHeight - (item.queries / maxQueries) * chartHeight;
+    return { x, y, ...item };
+  });
+
+  const pathD = points.map((p, i) => 
+    i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`
+  ).join(' ');
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Query Analytics</h2>
-      <div className="h-64 flex items-end justify-between gap-2">
-        {data.map((item) => (
-          <div key={item.day} className="flex flex-col items-center flex-1">
-            <div
-              className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-600"
-              style={{ height: `${(item.queries / maxQueries) * 100}%` }}
-            />
-            <span className="text-xs text-gray-600 mt-2">{item.day}</span>
-          </div>
-        ))}
+      <div className="relative h-64">
+        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path
+            d={pathD}
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="2"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={`${pathD} L 100 100 L 0 100 Z`}
+            fill="rgba(59, 130, 246, 0.1)"
+          />
+          {points.map((p) => (
+            <circle key={p.day} cx={p.x} cy={p.y} r="3" fill="#3b82f6" />
+          ))}
+        </svg>
+        <div className="absolute bottom-0 w-full flex justify-between text-xs text-gray-600">
+          {data.map((d) => (
+            <span key={d.day}>{d.day}</span>
+          ))}
+        </div>
       </div>
     </div>
   );
