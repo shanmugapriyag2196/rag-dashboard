@@ -1,29 +1,16 @@
 export default function QueryCategories() {
-  const categories = [
-    { name: 'Email', count: 2124 },
-    { name: 'QuickBooks', count: 1297 },
-  ];
-
-  const maxCount = Math.max(...categories.map(c => c.count));
-
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Top Query Categories</h2>
-      <div className="space-y-3">
-        {categories.map((category) => (
-          <div key={category.name}>
-            <div className="flex justify-between mb-1">
-              <span className="text-sm text-gray-600">{category.name}</span>
-              <span className="text-sm font-medium">{category.count}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full"
-                style={{ width: `${(category.count / maxCount) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+      <h2 className="text-lg font-semibold text-gray-800 mb-4">Query Summary</h2>
+      <div className="space-y-4">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-gray-600">Invoice Count</p>
+          <p className="text-2xl font-bold text-blue-800">348</p>
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg">
+          <p className="text-sm text-gray-600">QB Load Status Count</p>
+          <p className="text-2xl font-bold text-green-800">121</p>
+        </div>
       </div>
     </div>
   );
