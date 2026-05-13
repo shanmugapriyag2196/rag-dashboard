@@ -37,25 +37,14 @@ export default function Dashboard() {
         ]);
         const convData = await convRes.json();
         const dashData = await dashRes.json();
-        
-        const conversations = convData.conversations || [];
-        
-        interface ConversationItem {
-          role: string;
-          content: string;
-          timestamp: string;
-        }
-        
-        const userMessages = (conversations as ConversationItem[]).filter(c => c.role === 'user');
-        const assistantMessages = (conversations as ConversationItem[]).filter(c => c.role === 'assistant');
-        
+
         setStats({
-          totalConversations: conversations.length,
-          totalQueries: userMessages.length,
+          totalConversations: convData.conversations?.length || 0,
+          totalQueries: convData.conversations?.length || 0,
           vectorRecords: dashData.filesCount || 0,
           documentsIndexed: dashData.filesCount || 0,
-          successfulQueries: Math.floor(assistantMessages.length * 0.95),
-          failureQueries: Math.ceil(assistantMessages.length * 0.05),
+          successfulQueries: dashData.successCount || 0,
+          failureQueries: dashData.failureCount || 0,
         });
       } catch (error) {
         console.error('Failed to fetch stats:', error);

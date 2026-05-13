@@ -63,11 +63,31 @@ export const upsertVector = async (id: string, values: number[], metadata: Recor
   });
 };
 
-export const upsertConversation = async (id: string, metadata: { role: string; content: string; timestamp: string }) => {
+export const upsertConversation = async (id: string, metadata: { role: string; content: string; timestamp: string; status?: string }) => {
   const index = getConversationIndex();
   const embedding = await getEmbedding(metadata.content);
   const vector512 = embedding.slice(0, 512);
   await index.upsert({
     records: [{ id, values: vector512, metadata }],
   });
+};
+
+export const queryConversationStats = async () => {
+  const index = getConversationIndex();
+  const results = await index.query({
+    vector: new Array(512).fill(0.001),
+    topK: 1000,
+    includeMetadata: true,
+  });
+
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (const match of results.matches || []) {
+    const status = match.metadata?.status;
+    if (status === 'success') successCount++;
+    else if (status === 'failure') failureCount++;
+  }
+
+  return { successCount, failureCount };
 };

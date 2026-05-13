@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { queryConversationStats } from '@/lib/pinecone';
 
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 
@@ -6,7 +7,7 @@ export async function GET() {
   try {
     let filesCount = 0;
     let files: Array<{id: string; name: string; size: string}> = [];
-    
+
     try {
       const response = await fetch('https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data/files', {
         method: 'GET',
@@ -14,7 +15,7 @@ export async function GET() {
           'Authorization': `Bearer ${PINECONE_API_KEY}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         files = data.files?.map((f: {id?: string; name?: string; filename?: string; size?: string}, i: number) => ({
@@ -47,9 +48,11 @@ export async function GET() {
       filesCount = files.length;
     }
 
-    return NextResponse.json({ filesCount, files });
+    const { successCount, failureCount } = await queryConversationStats();
+
+    return NextResponse.json({ filesCount, files, successCount, failureCount });
   } catch (error) {
     console.error('Dashboard stats error:', error);
-    return NextResponse.json({ filesCount: 16, files: [] });
+    return NextResponse.json({ filesCount: 16, files: [], successCount: 0, failureCount: 0 });
   }
 }

@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
             role: msg.role,
             content: msg.content,
             timestamp: new Date().toISOString(),
+            status: 'pending',
           });
         } catch (e) {
           console.warn('Failed to save conversation message:', e);
@@ -96,10 +97,11 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    
+
     let responseText = '';
     let sources: unknown[] = [];
-    
+    let hasFailure = false;
+
     if (typeof data === 'string') {
       responseText = data;
     } else if (data.message?.content) {
@@ -113,6 +115,12 @@ export async function POST(request: NextRequest) {
       responseText = typeof data.message === 'string' ? data.message : JSON.stringify(data.message);
     } else {
       responseText = JSON.stringify(data);
+      hasFailure = true;
+    }
+
+    // Check for error-like responses
+    if (responseText.toLowerCase().includes('error') || responseText.toLowerCase().includes('failed') || responseText.toLowerCase().includes('sorry')) {
+      hasFailure = true;
     }
 
     try {
@@ -120,11 +128,12 @@ export async function POST(request: NextRequest) {
         role: 'assistant',
         content: responseText || 'No response',
         timestamp: new Date().toISOString(),
+        status: hasFailure ? 'failure' : 'success',
       });
     } catch (e) {
       console.warn('Failed to save assistant response:', e);
     }
-    
+
     return NextResponse.json({
       response: responseText,
       sources: sources,
