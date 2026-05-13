@@ -8,10 +8,8 @@ const navItems = [
   { name: 'Chat', icon: '💬', href: '/chat' },
   { name: 'Conversations', icon: '📝', href: '/conversations' },
   { name: 'Documents', icon: '📁', href: '/documents' },
-  { name: 'Pinecone Index', icon: '🔍', href: '/pinecone' },
   { name: 'Users', icon: '👥', href: '/users' },
   { name: 'Settings', icon: '⚙️', href: '/settings' },
-  { name: 'Logs', icon: '📋', href: '/logs' },
 ];
 
 export default function Sidebar() {

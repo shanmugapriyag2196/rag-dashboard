@@ -8,7 +8,7 @@ export async function GET() {
     let files: Array<{id: string; name: string; size: string}> = [];
     
     try {
-      const response = await fetch('https://prod-1-data.ke.pinecone.io/assistant/invoice-data/files', {
+      const response = await fetch('https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data/files', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${PINECONE_API_KEY}`,
