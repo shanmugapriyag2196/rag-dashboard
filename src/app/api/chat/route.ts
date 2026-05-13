@@ -3,11 +3,46 @@ import { v4 as uuidv4 } from 'uuid';
 import { upsertConversation } from '@/lib/pinecone';
 
 const PINECONE_ASSISTANT_URL = 'https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data';
+const MAX_TOKENS = 128000; // Leave headroom under the 131040 limit
+
+// Approximate token count (averages ~4 chars per token for English text)
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+function truncateMessages(messages: { role: string; content: string }[]): { role: string; content: string }[] {
+  // Always keep the latest message
+  if (messages.length <= 1) return messages;
+
+  const totalTokens = messages.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
+
+  if (totalTokens <= MAX_TOKENS) return messages;
+
+  // Truncate from the beginning, keeping the last message and alternating assistant/user messages
+  const truncated: typeof messages = [];
+  // Always include the most recent message
+  truncated.push(messages[messages.length - 1]);
+
+  // Add previous messages (skipping the last one we already added) from newest to oldest,
+  // alternating to preserve conversation structure
+  for (let i = messages.length - 2; i >= 0; i--) {
+    const candidate = [...truncated, messages[i]];
+    const candidateTokens = candidate.reduce((sum, msg) => sum + estimateTokens(msg.content), 0);
+    if (candidateTokens <= MAX_TOKENS) {
+      truncated.push(messages[i]);
+    } else {
+      break;
+    }
+  }
+
+  // Reverse to restore chronological order
+  return truncated.reverse();
+}
 
 export async function POST(request: NextRequest) {
   try {
     const apiKey = process.env.PINECONE_API_KEY;
-    
+
     if (!apiKey) {
       console.error('PINECONE_API_KEY is not configured');
       return NextResponse.json(
@@ -17,11 +52,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { messages } = await request.json();
-    
-    const pineconeMessages = messages.map((msg: { role: string; content: string }) => ({
+
+    const allMessages = messages.map((msg: { role: string; content: string }) => ({
       role: msg.role,
       content: msg.content,
     }));
+
+    const pineconeMessages = truncateMessages(allMessages);
 
     if (messages.length > 1) {
       const previousMessages = messages.slice(0, -1);
