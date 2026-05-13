@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
+import { upsertConversation } from '@/lib/pinecone';
 
 const PINECONE_ASSISTANT_URL = 'https://prod-1-data.ke.pinecone.io/assistant/chat/invoice-data';
 
@@ -20,6 +22,16 @@ export async function POST(request: NextRequest) {
       role: msg.role,
       content: msg.content,
     }));
+
+    const previousMessages = messages.slice(0, -1);
+
+    for (const msg of previousMessages) {
+      await upsertConversation(uuidv4(), {
+        role: msg.role,
+        content: msg.content,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     const response = await fetch(PINECONE_ASSISTANT_URL, {
       method: 'POST',
@@ -60,6 +72,12 @@ export async function POST(request: NextRequest) {
     } else {
       responseText = JSON.stringify(data);
     }
+
+    await upsertConversation(uuidv4(), {
+      role: 'assistant',
+      content: responseText || 'No response',
+      timestamp: new Date().toISOString(),
+    });
     
     return NextResponse.json({
       response: responseText,

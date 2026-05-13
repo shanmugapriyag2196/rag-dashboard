@@ -17,7 +17,7 @@ interface Message {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hello! I\'m your Invoice AI Assistant. I can help you find information about invoices from your Pinecone database. Try asking: "How many invoices from email for April 2025?"' },
+    { role: 'assistant', content: 'Hello! I\'m your Invoice AI Assistant. I can help you find information about invoices from your Pinecone database.' },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
