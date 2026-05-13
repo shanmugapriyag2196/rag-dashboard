@@ -93,16 +93,19 @@ export default function ChatPage() {
                         : 'bg-white text-gray-900 rounded-bl-none shadow-sm'
                     }`}>
                       <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                      {msg.sources && msg.sources.length > 0 && (
-                        <div className="mt-3 pt-3 border-t border-gray-200">
-                          <p className="text-xs font-medium text-gray-600 mb-1">Sources from Pinecone:</p>
-                          {msg.sources.map((source) => (
-                            <div key={source.id} className="text-xs text-gray-500 mb-1">
-                              <span className="font-mono bg-gray-100 px-1 rounded">{source.score.toFixed(2)}</span> {source.text.substring(0, 100)}...
-                            </div>
-                          ))}
-                        </div>
-                      )}
+{msg.sources && msg.sources.length > 0 && (
+                         <div className="mt-3 pt-3 border-t border-gray-200">
+                           <p className="text-xs font-medium text-gray-600 mb-1">Sources from Pinecone:</p>
+                           {msg.sources.map((source, idx) => (
+                             <div key={source.id || idx} className="text-xs text-gray-500 mb-1">
+                               {source.score && (
+                                 <span className="font-mono bg-gray-100 px-1 rounded mr-2">{source.score.toFixed(2)}</span>
+                               )}
+                               {source.text?.substring(0, 100) || 'No text available'}...
+                             </div>
+                           ))}
+                         </div>
+                       )}
                     </div>
                   </div>
                 </div>

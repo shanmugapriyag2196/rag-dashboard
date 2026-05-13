@@ -11,9 +11,7 @@ const navItems = [
   { name: 'Pinecone Index', icon: '🔍', href: '/pinecone' },
   { name: 'Users', icon: '👥', href: '/users' },
   { name: 'Settings', icon: '⚙️', href: '/settings' },
-  { name: 'API Key', icon: '🔑', href: '/api-key' },
   { name: 'Logs', icon: '📋', href: '/logs' },
-  { name: 'Help & Support', icon: '❓', href: '/help' },
 ];
 
 export default function Sidebar() {
@@ -43,16 +41,6 @@ export default function Sidebar() {
           ))}
         </ul>
       </nav>
-      <div className="p-4 border-t">
-        <div className="text-sm">
-          <p className="text-gray-500">User Role</p>
-          <p className="font-medium text-gray-800">Admin</p>
-        </div>
-        <div className="mt-2 text-sm">
-          <p className="text-gray-500">Email</p>
-          <p className="font-medium text-gray-800 truncate">user@example.com</p>
-        </div>
-      </div>
     </aside>
   );
 }
