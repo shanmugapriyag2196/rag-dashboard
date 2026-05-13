@@ -1,10 +1,7 @@
 export default function QueryCategories() {
   const categories = [
-    { name: 'Invoice Status', count: 1245 },
-    { name: 'Payment Info', count: 876 },
-    { name: 'Due Dates', count: 654 },
-    { name: 'Amount Queries', count: 432 },
-    { name: 'Vendor Info', count: 210 },
+    { name: 'Email', count: 2124 },
+    { name: 'QuickBooks', count: 1297 },
   ];
 
   const maxCount = Math.max(...categories.map(c => c.count));

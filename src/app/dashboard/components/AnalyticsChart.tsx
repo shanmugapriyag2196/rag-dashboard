@@ -2,13 +2,13 @@
 
 export default function AnalyticsChart() {
   const data = [
-    { day: 'Mon', queries: 120 },
-    { day: 'Tue', queries: 150 },
-    { day: 'Wed', queries: 180 },
-    { day: 'Thu', queries: 140 },
-    { day: 'Fri', queries: 200 },
-    { day: 'Sat', queries: 90 },
-    { day: 'Sun', queries: 110 },
+    { day: 'Mon', queries: 120, successful: 115, failures: 5 },
+    { day: 'Tue', queries: 150, successful: 145, failures: 5 },
+    { day: 'Wed', queries: 180, successful: 170, failures: 10 },
+    { day: 'Thu', queries: 140, successful: 135, failures: 5 },
+    { day: 'Fri', queries: 200, successful: 190, failures: 10 },
+    { day: 'Sat', queries: 90, successful: 88, failures: 2 },
+    { day: 'Sun', queries: 110, successful: 108, failures: 2 },
   ];
 
   const maxQueries = Math.max(...data.map(d => d.queries));
