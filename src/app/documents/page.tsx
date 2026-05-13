@@ -34,6 +34,7 @@ export default function DocumentsPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="bg-white shadow-sm p-6">
           <h1 className="text-2xl font-bold text-gray-800">Documents</h1>
+          <p className="text-gray-600 mt-1">{files.length} files indexed</p>
         </header>
         <main className="flex-1 overflow-auto p-6">
           {loading ? (
