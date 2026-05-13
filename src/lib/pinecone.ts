@@ -31,7 +31,7 @@ export const queryVectors = async (embedding: number[], topK: number = 5) => {
 export const queryConversations = async (topK: number = 100) => {
   const index = getConversationIndex();
   const results = await index.query({
-    vector: new Array(1536).fill(0),
+    vector: new Array(512).fill(0),
     topK,
     includeMetadata: true,
   });
@@ -48,6 +48,6 @@ export const upsertVector = async (id: string, values: number[], metadata: Recor
 export const upsertConversation = async (id: string, metadata: { role: string; content: string; timestamp: string }) => {
   const index = getConversationIndex();
   await index.upsert({
-    records: [{ id, values: new Array(1536).fill(0), metadata }],
+    records: [{ id, values: new Array(512).fill(0), metadata }],
   });
 };
