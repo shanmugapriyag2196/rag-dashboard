@@ -23,14 +23,19 @@ export async function POST(request: NextRequest) {
       content: msg.content,
     }));
 
-    const previousMessages = messages.slice(0, -1);
-
-    for (const msg of previousMessages) {
-      await upsertConversation(uuidv4(), {
-        role: msg.role,
-        content: msg.content,
-        timestamp: new Date().toISOString(),
-      });
+    if (messages.length > 1) {
+      const previousMessages = messages.slice(0, -1);
+      for (const msg of previousMessages) {
+        try {
+          await upsertConversation(uuidv4(), {
+            role: msg.role,
+            content: msg.content,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.warn('Failed to save conversation message:', e);
+        }
+      }
     }
 
     const response = await fetch(PINECONE_ASSISTANT_URL, {
@@ -73,11 +78,15 @@ export async function POST(request: NextRequest) {
       responseText = JSON.stringify(data);
     }
 
-    await upsertConversation(uuidv4(), {
-      role: 'assistant',
-      content: responseText || 'No response',
-      timestamp: new Date().toISOString(),
-    });
+    try {
+      await upsertConversation(uuidv4(), {
+        role: 'assistant',
+        content: responseText || 'No response',
+        timestamp: new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Failed to save assistant response:', e);
+    }
     
     return NextResponse.json({
       response: responseText,

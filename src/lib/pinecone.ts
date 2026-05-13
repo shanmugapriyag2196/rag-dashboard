@@ -1,4 +1,22 @@
+import OpenAI from 'openai';
 import { Pinecone } from '@pinecone-database/pinecone';
+
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+  return new OpenAI({ apiKey });
+};
+
+export const getEmbedding = async (text: string): Promise<number[]> => {
+  const openai = getOpenAIClient();
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: text,
+  });
+  return response.data[0].embedding;
+};
 
 const getPineconeClient = () => {
   const apiKey = process.env.PINECONE_API_KEY;
@@ -31,7 +49,7 @@ export const queryVectors = async (embedding: number[], topK: number = 5) => {
 export const queryConversations = async (topK: number = 100) => {
   const index = getConversationIndex();
   const results = await index.query({
-    vector: new Array(512).fill(0),
+    vector: new Array(512).fill(0.001),
     topK,
     includeMetadata: true,
   });
@@ -47,7 +65,9 @@ export const upsertVector = async (id: string, values: number[], metadata: Recor
 
 export const upsertConversation = async (id: string, metadata: { role: string; content: string; timestamp: string }) => {
   const index = getConversationIndex();
+  const embedding = await getEmbedding(metadata.content);
+  const vector512 = embedding.slice(0, 512);
   await index.upsert({
-    records: [{ id, values: new Array(512).fill(0), metadata }],
+    records: [{ id, values: vector512, metadata }],
   });
 };
