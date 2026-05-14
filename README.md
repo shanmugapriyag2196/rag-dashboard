@@ -1,3 +1,6 @@
+# Purpose
+Create RAG Agent for Invoice details. I already uploaded 16 text invoice files to PINECONE Assistant Platform. I want to create Invoice details Dashboard.
+
 # Invoice RAG Assistant
 
 A Next.js chatbot application that answers invoice-related questions by querying data stored in Pinecone vector database.
